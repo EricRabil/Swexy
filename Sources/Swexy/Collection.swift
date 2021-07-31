@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension Collection where Element: Collection {
+public extension Collection {
     /// Creates a dictionary whose key is represented by the keypath and whose value is that of this collection
     @inlinable
     func dictionary<Key: Hashable>(keyedBy key: KeyPath<Element, Key>) -> [Key: Element] {
@@ -100,7 +100,9 @@ public extension Collection where Element: Collection {
             dict[key] = value
         }
     }
-    
+}
+
+public extension Collection where Element: Collection {
     @inlinable
     func flatten() -> [Element.Element] {
         flatMap {
