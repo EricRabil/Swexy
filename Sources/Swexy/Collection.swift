@@ -100,6 +100,22 @@ public extension Collection {
             dict[key] = value
         }
     }
+    
+    @inlinable
+    // used as such: arr.sorted(usingKey: \.date, by: >)
+    func sorted<Value: Comparable>(usingKey key: KeyPath<Element, Value>, by areInIncreasingOrder: (Value, Value) throws -> Bool) rethrows -> [Element] {
+        try self.sorted(by: { a, b in
+            try areInIncreasingOrder(a[keyPath: key], b[keyPath: key])
+        })
+    }
+    
+    @inlinable
+    // used as such: arr.sorted(usingKey: \.chat?.lastMessage, withdefaultValue: 0, by: >)
+    func sorted<Value: Comparable>(usingKey key: KeyPath<Element, Optional<Value>>, withDefaultValue defaultValue: @autoclosure () -> Value, by areInIncreasingOrder: (Value, Value) throws -> Bool) rethrows -> [Element] {
+        try self.sorted(by: { a, b in
+            try areInIncreasingOrder(a[keyPath: key] ?? defaultValue(), b[keyPath: key] ?? defaultValue())
+        })
+    }
 }
 
 public extension Collection where Element: Collection {
