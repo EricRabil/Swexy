@@ -5,6 +5,8 @@
 //  Created by Eric Rabil on 8/24/21.
 //
 
+#if canImport(Combine)
+
 import Foundation
 import Combine
 
@@ -83,3 +85,4 @@ public extension SubjectStream {
         return unsubscribe
     }
 }
+#endif

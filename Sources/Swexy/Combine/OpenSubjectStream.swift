@@ -5,8 +5,9 @@
 //  Created by Eric Rabil on 8/24/21.
 //
 
+#if canImport(Combine)
+
 import Foundation
-import Combine
 
 /**
  A subclass of SubjectStream whose publish function is publicly accessible rather than passed via initializer.
@@ -19,4 +20,4 @@ public class OpenSubjectStream<Element>: SubjectStream<Element> {
         super.init(publish: &publish)
     }
 }
-
+#endif
