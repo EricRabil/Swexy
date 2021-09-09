@@ -49,6 +49,7 @@ public class SubjectStream<Element> {
         cancellable.store(in: &cancellables)
         
         return {
+            cancellable.cancel()
             self.cancellables.remove(cancellable)
         }
     }
