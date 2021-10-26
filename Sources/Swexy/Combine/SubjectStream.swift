@@ -5,8 +5,6 @@
 //  Created by Eric Rabil on 8/24/21.
 //
 
-#if canImport(Combine)
-
 import Foundation
 import Combine
 
@@ -14,7 +12,6 @@ import Combine
 @_silgen_name("dispatch_get_current_queue")
 func dispatch_get_current_queue() -> DispatchQueue
 
-@available(macOS 10.15, iOS 13.0, *)
 public class SubjectStream<Element> {
     private let subject = PassthroughSubject<Element, Never>()
     private let publisher: Publishers.Share<PassthroughSubject<Element, Never>>
@@ -86,4 +83,3 @@ public extension SubjectStream {
         return unsubscribe
     }
 }
-#endif
