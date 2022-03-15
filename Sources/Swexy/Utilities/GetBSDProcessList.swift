@@ -62,6 +62,13 @@ public func GetBSDProcessList() -> [kinfo_proc]  {
     return result ?? []
 }
 
+public func NSUsernameForUserIdentifier(_ identifier: uid_t) -> String! {
+    if let pwuid = getpwuid(identifier), let name = pwuid.pointee.pw_name {
+        return String(cString: name)
+    }
+    return nil
+}
+
 public extension kinfo_proc {
     var processName: String {
         withUnsafePointer(to: kp_proc.p_comm) {
@@ -76,7 +83,7 @@ public extension kinfo_proc {
     }
     
     var ownerName: String {
-        String(cString: getpwuid(ownerUID).pointee.pw_name)
+        NSUsernameForUserIdentifier(ownerUID) ?? "(nil)"
     }
 }
 
