@@ -7,8 +7,21 @@
 
 import Foundation
 
+fileprivate func extractIPv4(_ address: UnsafeMutablePointer<sockaddr>?) -> String? {
+    return address.flatMap { address in
+        guard address.pointee.sa_family == sa_family_t(AF_INET) else {
+            return nil
+        }
+        var addressChars = [CChar](repeating: 0, count: 2049)
+        guard getnameinfo(address, socklen_t(address.pointee.sa_len), &addressChars, socklen_t(addressChars.count), nil, 0, NI_NUMERICHOST) == 0 else {
+            return nil
+        }
+        return String(cString: addressChars)
+    }
+}
+
 /// This will return the public-facing IP address for Macs that have a WAN IP hooked up to their ethernet port
-public func NSGetEthernetIPAddress(_ targetFamily: Int32 = AF_INET) -> String {
+public func NSGetEthernetIPAddress() -> String {
     var ifaddrs: UnsafeMutablePointer<ifaddrs>? = nil
     guard getifaddrs(&ifaddrs) == 0 else {
         return ""
@@ -20,7 +33,7 @@ public func NSGetEthernetIPAddress(_ targetFamily: Int32 = AF_INET) -> String {
         guard let family = ifaddr.ifa_addr?.pointee.sa_family else {
             continue
         }
-        guard family == sa_family_t(targetFamily) else {
+        guard family == AF_INET else {
             continue
         }
         switch String(cString: ifaddr.ifa_name) {
@@ -35,12 +48,12 @@ public func NSGetEthernetIPAddress(_ targetFamily: Int32 = AF_INET) -> String {
             guard Int32(flags) & IFF_LOOPBACK != IFF_LOOPBACK else {
                 continue
             }
-            guard var addr = ifaddr.ifa_addr?.pointee else {
+            guard let addr = ifaddr.ifa_addr else {
                 continue
             }
-            return String(cString: &addr.sa_data.0)
+            return extractIPv4(addr) ?? "-"
         default:
-            break
+            continue
         }
     }
     return "-"
