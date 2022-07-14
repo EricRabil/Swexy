@@ -41,6 +41,7 @@ public class ERTimer {
     }
     
     public func reschedule(fromNow: DispatchTimeInterval) {
+        timer.suspend()
         timer.schedule(deadline: .now().advanced(by: fromNow))
         #if DEBUG && canImport(Swog)
         log.info("Rescheduled timer for \(String(describing: fromNow))")
