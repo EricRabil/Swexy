@@ -11,6 +11,7 @@ import Combine
 import Swog
 #endif
 
+@available(macOS 10.15, *)
 public class ERTimer {
     #if DEBUG && canImport(Swog)
     public static let log = Logger(category: "ERTimer")
@@ -50,6 +51,7 @@ public class ERTimer {
     }
 }
 
+@available(macOS 10.15, *)
 public class ERControllableTimer: ERTimer {
     #if DEBUG && canImport(Swog)
     public override var log: Swog.Logger { .init(category: "ERControllableTimer") }
@@ -93,6 +95,7 @@ public class ERControllableTimer: ERTimer {
     }
 }
 
+@available(macOS 10.15, *)
 public class ERExponentialTimer {
     #if DEBUG && canImport(Swog)
     public static let log = Logger(category: "ERExponentialTimer")
@@ -132,17 +135,22 @@ public class ERExponentialTimer {
         }
     }
     
-    public init(base: DispatchTimeInterval, queue: DispatchQueue = .global(qos: .utility), growthRate: Double = 1.0, callback: @escaping () -> Bool) {
+    
+    public convenience init(base: DispatchTimeInterval, queue: DispatchQueue = .global(qos: .utility), growthRate: Double = 1.0, callback: @escaping () -> Bool) {
+        self.init(base: base, queue: queue, growthRate: growthRate, callback: { _ in callback() })
+    }
+    
+    public init(base: DispatchTimeInterval, queue: DispatchQueue = .global(qos: .utility), growthRate: Double = 1.0, callback: @escaping (ERExponentialTimer) -> Bool) {
         self.base = base
         self.growthRate = growthRate
-        timer = ERTimer(scheduledFromNow: base, queue: queue, callback: {
+        timer = ERTimer(scheduledFromNow: base, queue: queue, callback: { [weak timer] in
             let attempts = self.attempts + 1
             #if DEBUG && canImport(Swog)
             self.log.info("Incrementing attempts to \(attempts)")
             #endif
             self.attempts = attempts
-            if callback() {
-                self.timer!.reschedule(fromNow: self.waitPeriod)
+            if callback(self) {
+                timer?.reschedule(fromNow: self.waitPeriod)
             }
         })
     }

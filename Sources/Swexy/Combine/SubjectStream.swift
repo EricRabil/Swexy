@@ -12,6 +12,7 @@ import Combine
 @_silgen_name("dispatch_get_current_queue")
 func dispatch_get_current_queue() -> DispatchQueue
 
+@available(macOS 10.15, *)
 public class SubjectStream<Element> {
     private let subject = PassthroughSubject<Element, Never>()
     private let publisher: Publishers.Share<PassthroughSubject<Element, Never>>
