@@ -8,24 +8,45 @@
 import Foundation
 
 @propertyWrapper
-public class Atomic<T> {
-    private var _wrappedValue: T
+public enum Atomic<T> {
+    case atomic(innerValue: T, semaphore: DispatchSemaphore)
     
-    private let semaphore = DispatchSemaphore(value: 1)
-    public var wrappedValue: T {
-        _read {
-            semaphore.wait()
-            yield _wrappedValue
-            semaphore.signal()
+    @usableFromInline typealias MemoryLayout = (T, DispatchSemaphore)
+    
+    @usableFromInline var memoryLayout: MemoryLayout {
+        @_transparent get {
+            unsafeBitCast(self, to: MemoryLayout.self)
         }
-        _modify {
+    }
+    
+    @_transparent @usableFromInline var semaphore: DispatchSemaphore {
+        memoryLayout.1
+    }
+    
+    @usableFromInline var _wrappedValue: T {
+        @_transparent get {
+            memoryLayout.0
+        }
+        @_transparent set {
+            self = .atomic(innerValue: newValue, semaphore: semaphore)
+        }
+    }
+    
+    public var wrappedValue: T {
+        @_transparent get {
             semaphore.wait()
-            yield &_wrappedValue
+            let returnValue = _wrappedValue
+            semaphore.signal()
+            return returnValue
+        }
+        @_transparent set {
+            semaphore.wait()
+            _wrappedValue = newValue
             semaphore.signal()
         }
     }
     
-    public init(wrappedValue: T) {
-        _wrappedValue = wrappedValue
+    @_transparent public init(wrappedValue: T) {
+        self = .atomic(innerValue: wrappedValue, semaphore: DispatchSemaphore(value: 1))
     }
 }
